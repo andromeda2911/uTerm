@@ -73,7 +73,7 @@ void Cursor_Task(void)
 	else {
 		if(Cursor.Type)
       TEXT_BUF(Cursor.X,Cursor.Y) = (Cursor.Type==Cursor_Underline)
-	                                ?Char_Cursor_Uline:Cursor.Char^0xDB; //Changedbfrom 0x80 car start at 32 not 0
+	                                ?Char_Cursor_Uline:Cursor.Char^0xDB; //Change 0xdbfrom 0x80 car start at 32 not 0
 	}
   Cursor.State=!Cursor.State;
 }
@@ -116,7 +116,7 @@ void Cursor_Reset(void)
 
 uint8_t BlankChar(void)
 {
-  return ANSI_Prefs.Inverse?FONT_CHAR(' ')+0x80:FONT_CHAR(' ');
+  return ANSI_Prefs.Inverse?FONT_CHAR(' ')+0x80:FONT_CHAR(' ');	
 }
 
 void VGA_ClearScreen(void)
@@ -318,7 +318,7 @@ void VGA_Putch(uint8_t Ch)
       Ch-=0x60;
   }
   if (ANSI_Prefs.Inverse)
-    Ch|=0x80;
+    Ch|=0x80;  //Car 0-31
 
 	if (wrap_next) {
 	  // if wrapping is not allowed just stay at current location
