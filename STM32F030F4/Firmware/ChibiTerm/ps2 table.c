@@ -104,7 +104,7 @@ const uint8_t Unshifted_Regular[] =
  'k',// (K) # 25
  'l',// (L) # 26
  'm',// (;:) # 27
- 'ù',// ('") # 28
+ 'u',// ('") # 28
  '*',// (`~) # 29
  LEFT_SHIFT_KEY,// (LShift) # 2a
  '<',// (\|) on a 102-key keyboard # 2b
