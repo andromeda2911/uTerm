@@ -73,7 +73,7 @@ void Cursor_Task(void)
 	else {
 		if(Cursor.Type)
       TEXT_BUF(Cursor.X,Cursor.Y) = (Cursor.Type==Cursor_Underline)
-	                                ?Char_Cursor_Uline:Cursor.Char^0xDB; //Change 0xdbfrom 0x80 car start at 32 not 0
+	                                ?Char_Cursor_Uline:Cursor.Char^0x80; //Change 0xdbfrom 0x80 car start at 32 not 0
 	}
   Cursor.State=!Cursor.State;
 }

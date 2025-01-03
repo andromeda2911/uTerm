@@ -17,7 +17,7 @@ extern const uint8_t FONT_TABLE[4096];
 #define FONT_ROW 16
 #define FONT_COL 8
 
-#define FONT_START 32
+#define FONT_START 0
 #define FONT_END 255
 
 #endif
