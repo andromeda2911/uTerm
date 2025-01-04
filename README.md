@@ -1,6 +1,5 @@
 ## uTerm
 
-Forked from SuperFabius for Azerty keyboard and font IBM PC DOS CP437.  
 uTerm (micro-Term) is a VT100-like terminal for the Z80-MBC2 (https://hackaday.io/project/159973). It has a VGA out and PS/2 keyboard connector, a power supply for the Z80-MBC2 and a "transparent" serial-USB port.
 
 These are the sources modified for the uTerm forked from the Madis Kaal 
