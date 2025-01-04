@@ -30,6 +30,12 @@
 
 	If not, see http://www.gnu.org/licenses/gpl-3.0.en.html
  */
+/*
+Last Updated:  01/01/2025
+
+Modinfo:				
+				03/01/2025      Bug fix for backspace
+*/
 
 #include <string.h>
 #include <ctype.h>
