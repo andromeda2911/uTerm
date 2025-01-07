@@ -31,6 +31,16 @@
 
 	If not, see http://www.gnu.org/licenses/gpl-3.0.en.html
  */
+/*
+Last Updated:  04/01/2025
+
+Modinfo:
+				04/01/2025      Bug fix car. / on numeric keypad
+				04/01/2025			Fixed bug with Shift Key when CapsLock is on
+				06/01/2025			Enhanced ps/2 for ÈË‡µ££
+				06/01/2025			Fix bug when CAPSLOCK is on and SHIFT is on for special car.
+*/
+
 
 #include <ctype.h>
 #include <string.h>
@@ -62,13 +72,15 @@ void PS2_Init(void)
 	EXTI->IMR |= EXTI_IMR_MR1;											// Unmask PA1
 	
 	PS2_IF.Init = 0;
-	PS2_Fsm.State = PS2_UNKNOWN;
 	Modifiers=0;
 	FIFO_Clear((FIFO*)PS2_Buf);
 	
 	// NVIC IRQ
   NVIC_SetPriority(EXTI0_1_IRQn,PS2_IRQ_PRIORITY);
   NVIC_EnableIRQ(EXTI0_1_IRQn);
+	
+	PS2_Fsm.State = PS2_CMD_ACK;
+  PS2_Send(PS2_CMD_RESET);
 }
 
 // PS/2 IRQ handler at PA1
@@ -170,6 +182,14 @@ void PS2_Update_LED(uint8_t LED)
 	PS2_Send(PS2_Cmd);
 }
 
+void PS2_Set_Scancode(uint8_t C)
+{	
+	PS2_Fsm.State = PS2_CMD;	
+	PS2_Cmd = 0xF0;
+	PS2_Cmd_Arg = C;
+	PS2_Send(PS2_Cmd);
+}
+
 // ------------------------------------------------------------------
 
 void NumLockOn(void)
@@ -207,7 +227,7 @@ static void Send_Key(uint8_t c)
 {
 	if (!c)
     return;
-	if (c<0x80)
+	if (c < 0xc0) // 219
 	{
 	  if (Modifiers&CONTROL_MODIFIER)
 		{
@@ -215,40 +235,66 @@ static void Send_Key(uint8_t c)
 				Putchar(toupper(c)-'@');
 			return;
 		}
-		if (isletter(c))
-		{
-	    if (Modifiers&CAPSLOCK_MODIFIER)
-			  c=toupper(c);
-		}
+		else if (isletter(c) && (Modifiers&CAPSLOCK_MODIFIER))
+		{	   			
+			if(Modifiers&SHIFT_MODIFIER) // if user holds shift key while CAPS is on...
+				c=tolower(c);
+			else
+				c=toupper(c);							
+		} 
 		Putchar(c);
 		return;
-	}
-	if (c<0xe0)
-	{
-		c-=0x80;
+	} 
+	
+	if (c >= 0xc0)
+	{  
+		c -= 0xc0;
 		if (c<(sizeof(Ansi_Key_Sequences)/sizeof(Ansi_Key_Sequences[0])))
 		{
 			Putchar(27);
-			PutStr(Ansi_Key_Sequences[c]);
+			PutStr(Ansi_Key_Sequences[c]);			
+		} else {
+			c += 0xc0; //219
+			if (Modifiers&CONTROL_MODIFIER)
+			{
+				if isctrl(c) {
+					Putchar(toupper(c)-'@');
+				}
+				return;
+			}
+			Putchar(c);
 		}
-		return;
+		return;				
 	}
+	
 }
 
 static void Key_Up(uint8_t key)
 {
 	uint8_t c;
 	key=Remap_Key(Scancode_Translations,COUNTOF(Scancode_Translations),key);
-	if (Modifiers&EXTEND_MODIFIER) 
+	
+	if (Modifiers&EXTEND_MODIFIER)
 	{
-		c=Lookup_Key(Escaped_Regular,COUNTOF(Escaped_Regular),key);
+			c=Lookup_Key(Escaped_Regular,COUNTOF(Escaped_Regular),key);
 	}
 	else {
-		if ((Modifiers&SHIFT_MODIFIER || Modifiers&FAKESHIFT_MODIFIER))
+		if ((Modifiers&ALTGR_MODIFIER))
+			c=Lookup_Key(Altgr_Regular,COUNTOF(Altgr_Regular),key); 
+		
+		else if ((Modifiers&SHIFT_MODIFIER || Modifiers&FAKESHIFT_MODIFIER))
 			c=Remap_Key(Shifted_Regular,COUNTOF(Shifted_Regular),key); 
+		
+		else if (Modifiers&CAPSLOCK_MODIFIER) {
+			if(((Modifiers&SHIFT_MODIFIER || Modifiers&FAKESHIFT_MODIFIER))) // if user holds shift key while CAPS is on...
+				c=Remap_Key(Unshifted_Regular,COUNTOF(Unshifted_Regular),key);
+			else
+				c=Remap_Key(Shifted_Regular,COUNTOF(Shifted_Regular),key); 
+		}
 		else
 			c=Remap_Key(Unshifted_Regular,COUNTOF(Unshifted_Regular),key);
-	}
+		}
+	
   switch (c) 
   {
     case LEFT_CONTROL_KEY:
@@ -262,6 +308,9 @@ static void Key_Up(uint8_t key)
     case LEFT_ALT_KEY:
       Modifiers&=~ALT_MODIFIER;
       return;
+    case RIGHT_ALT_KEY:
+      Modifiers&=~ALTGR_MODIFIER;
+      return;
     case FAKE_LSHIFT_KEY:
     case FAKE_RSHIFT_KEY:
       Modifiers&=~FAKESHIFT_MODIFIER;
@@ -273,10 +322,24 @@ static void Key_Down(uint8_t key)
 {
 uint8_t c;
 	key=Remap_Key(Scancode_Translations,COUNTOF(Scancode_Translations),key);
-	if ((Modifiers&SHIFT_MODIFIER || Modifiers&FAKESHIFT_MODIFIER))
-		c=Remap_Key(Shifted_Regular,COUNTOF(Shifted_Regular),key); 
-	else
-		c=Remap_Key(Unshifted_Regular,COUNTOF(Unshifted_Regular),key);
+	if (Modifiers&EXTEND_MODIFIER)
+	{
+			c=Lookup_Key(Escaped_Regular,COUNTOF(Escaped_Regular),key);
+	}
+	else {
+		if ((Modifiers&ALTGR_MODIFIER))
+			c=Lookup_Key(Altgr_Regular,COUNTOF(Altgr_Regular),key); 		
+		else if (Modifiers&CAPSLOCK_MODIFIER) {
+			if(((Modifiers&SHIFT_MODIFIER || Modifiers&FAKESHIFT_MODIFIER))) // if user holds shift key while CAPS is on...
+				c=Remap_Key(Unshifted_Regular,COUNTOF(Unshifted_Regular),key);
+			else
+				c=Remap_Key(Shifted_Regular,COUNTOF(Shifted_Regular),key); 
+		}
+		else if ((Modifiers&SHIFT_MODIFIER || Modifiers&FAKESHIFT_MODIFIER))
+			c=Remap_Key(Shifted_Regular,COUNTOF(Shifted_Regular),key); 
+		else
+			c=Remap_Key(Unshifted_Regular,COUNTOF(Unshifted_Regular),key);
+		}
 	if (!c)
 	  return;
   switch (c) 
@@ -290,7 +353,8 @@ uint8_t c;
       Modifiers|=SHIFT_MODIFIER;
       return;
     case LEFT_ALT_KEY:
-      Modifiers|=ALT_MODIFIER;
+		case RIGHT_ALT_KEY:
+      Modifiers|=((Modifiers&EXTEND_MODIFIER)?ALTGR_MODIFIER:ALT_MODIFIER);
       return;
     case CAPS_LOCK_KEY:
       Modifiers^=CAPSLOCK_MODIFIER;
@@ -309,16 +373,17 @@ uint8_t c;
       Modifiers|=FAKESHIFT_MODIFIER;
       return;
     case CONTROL_PRINTSCREEN_KEY:
-    case RIGHT_ALT_KEY:
+    //case RIGHT_ALT_KEY:
     case CONTROL_BREAK_KEY:
       break;
     default:
 			if (c==KEYPAD_KEY)
 			{
-		    if (Modifiers&NUMLOCK_MODIFIER)
-		      c=Lookup_Key(Keypad_Numeric,COUNTOF(Keypad_Numeric),key);
-			  else
-			  	c=Lookup_Key(Keypad_Regular,COUNTOF(Keypad_Regular),key);
+					if ((Modifiers&NUMLOCK_MODIFIER && !(Modifiers&SHIFT_MODIFIER)) ||
+							(!(Modifiers&NUMLOCK_MODIFIER) && Modifiers&SHIFT_MODIFIER))
+							c=Lookup_Key(Keypad_Numeric,COUNTOF(Keypad_Numeric),key);
+					else
+							c=Lookup_Key(Keypad_Regular,COUNTOF(Keypad_Regular),key);
 			}
 			Send_Key(c);
 			break;
@@ -332,13 +397,13 @@ void PS2_Task(void)
 	ps2_data = Getc((FIFO*)PS2_Buf);
 	if (ps2_data ==PS2_KBD_ERR_CODE)
 	{ 
-		PS2_Fsm.State = PS2_UNKNOWN;
+		PS2_Fsm.State = PS2_CMD_ACK;
 		PS2_Send(PS2_CMD_RESET);
 	  return;
 	}
 	else if (ps2_data == PS2_RESPOND_INIT_OK)
 	{
-		PS2_Fsm.State = PS2_KBD_RDY;						// Power on reset
+		PS2_Set_Scancode(2);						// Power on reset
 		return;
 	}
 	switch(PS2_Fsm.State)
@@ -346,6 +411,7 @@ void PS2_Task(void)
 		case PS2_UNKNOWN:
 		  if(ps2_data ==PS2_RESPOND_ACK)
 			{
+				PS2_Fsm.State = PS2_CMD_ACK;
 		    PS2_Send(PS2_CMD_RESET);
 				break;
 			}

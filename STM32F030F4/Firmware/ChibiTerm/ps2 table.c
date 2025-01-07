@@ -46,6 +46,7 @@ const uint8_t Scancode_Translations[] =
  0x55,0x56,0x77,0x78,0x79,0x7a,0x0e,0x7b,0x7c,0x4f,0x7d,0x4b,0x47,0x7e,0x7f,0x6f,
  0x52,0x53,0x50,0x4c,0x4d,0x48,0x01,0x45,0x57,0x4e,0x51,0x4a,0x37,0x49,0x46,0x54,
  0x80,0x81,0x82,0x41,0x54,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f
+ //0x9c,0xfd,0xa7,0x85,0x82,0x8a,0xe6
 	
 	/*
 	0xff,0x43,0x41,0x3f,0x3d,0x3b,0x3c,0x58,0x64,0x44,0x42,0x40,0x3e,0x0f,0x29,0x59,
@@ -87,15 +88,15 @@ const uint8_t Unshifted_Regular[] =
  0, // nothing #00
  27, // esc #01
  '&',// (1!) #02
- 'e',// (2@) #03
+ 130,// (2@) #03 é
  '"',// (3#) #04
  '\'',// (4$E) #05 
  '(',// (5%) #06 
  '-',// (6^) #07 
- 'e',// (7&) #08 
+ 138,// (7&) #08 è
  '_',// (8*) #09 
  'c',// (9() # 0a
- 'a',// (0)) # 0b
+ 133,// (0)) # 0b à
  ')',// (-_) # 0c
  '=',// (=+) # 0d
  8,// (Backspace) # 0e 
@@ -124,8 +125,8 @@ const uint8_t Unshifted_Regular[] =
  'k',// (K) # 25
  'l',// (L) # 26
  'm',// (;:) # 27
- 'u',// ('") # 28
- '*',// (`~) # 29
+ 151,// ('") # 28
+ 253,// (`~) # 29
  LEFT_SHIFT_KEY,// (LShift) # 2a
  '*',// (\|) on a 102-key keyboard # 2b
  'w',// (Z) # 2c
@@ -190,7 +191,7 @@ const uint8_t Shifted_Regular[] =
  '8',// (8*) #09 
  '9',// (9() # 0a
  '0',// (0)) # 0b
- '°',// (-_) # 0c
+ 248,// (-_) # 0c °
  '+',// (=+) # 0d
  8,// (Backspace) # 0e 
  9,// (Tab) # 0f
@@ -205,7 +206,7 @@ const uint8_t Shifted_Regular[] =
  'O',// (O) # 18
  'P',// (P) # 19
  '¨',// ([{) # 1a
- '£',// (]}) # 1b 
+ 156,// (]}) # 1b £
  13,// (Enter) # 1c
  LEFT_CONTROL_KEY,// (LCtrl) # 1d
  'Q',// (A) # 1e
@@ -219,9 +220,9 @@ const uint8_t Shifted_Regular[] =
  'L',// (L) # 26
  'M',// (;:) # 27
  '%',// ('") # 28
- 'µ',// (`~) # 29
+ 253,// (`~) # 29
  LEFT_SHIFT_KEY,// (LShift) # 2a
- 'µ',// (\|) on a 102-key keyboard # 2b
+ 230,// (\|) on a 102-key keyboard # 2b
  'W',// (Z) # 2c
  'X',// (X) # 2d
  'C',// (C) # 2e
@@ -231,7 +232,7 @@ const uint8_t Shifted_Regular[] =
  '?',// (M) # 32
  '.',// (,<) # 33
  '/',// (.>) # 34
- '§',// (/?) # 35
+ 163,// (/?) # 35  §
  RIGHT_SHIFT_KEY,// (RShift) # 36
  '*',// (Keypad-*) or (*/PrtScn) on a 83/84-key keyboard # 37
  LEFT_ALT_KEY,// (LAlt) # 38

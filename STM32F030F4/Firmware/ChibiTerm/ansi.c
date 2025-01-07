@@ -34,7 +34,7 @@
 Last Updated:  01/01/2025
 
 Modinfo:				
-				03/01/2025      Bug fix for backspace
+				03/01/2025      Bug fix for backspace and CTRL+H
 */
 
 #include <string.h>
